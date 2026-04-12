@@ -1,0 +1,142 @@
+@inherits LayoutComponentBase
+
+<div class="relative min-h-screen w-full flex overflow-hidden bg-background">
+    
+    <!-- Background Elements -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute inset-0 bg-surface"></div>
+        <!-- Dynamic Abstract Shapes -->
+        <div class="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-[120px]"></div>
+        <div class="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-tertiary/10 blur-[100px]"></div>
+        <div class="absolute inset-0 bg-grain"></div>
+    </div>
+
+    <!-- SideNavBar (Desktop) -->
+    <aside class="fixed left-0 top-0 h-screen w-64 z-50 bg-zinc-900/60 backdrop-blur-md hidden md:flex flex-col py-8 px-4 space-y-6 border-r border-white/5">
+        <div class="flex flex-col space-y-1 mb-6 px-4">
+            <span class="text-xl font-extrabold text-white font-headline tracking-tight text-[#6bfe9c]">Livestock Elite</span>
+            <span class="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mt-1">Dijital Çoban</span>
+        </div>
+        
+        <nav class="flex-1 space-y-2">
+            <NavLink href="" Match="NavLinkMatch.All" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-zinc-500 hover:bg-white/5 hover:text-white transition-all" ActiveClass="text-emerald-400 border-r-2 border-emerald-400 bg-emerald-400/5">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span class="font-medium font-label text-sm tracking-wide">Panel</span>
+            </NavLink>
+            <NavLink href="animals" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-zinc-500 hover:bg-white/5 hover:text-white transition-all" ActiveClass="text-emerald-400 border-r-2 border-emerald-400 bg-emerald-400/5">
+                <span class="material-symbols-outlined" data-icon="pets">pets</span>
+                <span class="font-medium font-label text-sm tracking-wide">Hayvanlar</span>
+            </NavLink>
+            <NavLink href="animal-analysis" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-zinc-500 hover:bg-white/5 hover:text-white transition-all" ActiveClass="text-emerald-400 border-r-2 border-emerald-400 bg-emerald-400/5">
+                <span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+                <span class="font-medium font-label text-sm tracking-wide">AI Analizleri</span>
+            </NavLink>
+            <NavLink href="auth" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-zinc-500 hover:bg-white/5 hover:text-white transition-all" ActiveClass="text-emerald-400 border-r-2 border-emerald-400 bg-emerald-400/5">
+                <span class="material-symbols-outlined" data-icon="login">login</span>
+                <span class="font-medium font-label text-sm tracking-wide">Giriş / Kayıt</span>
+            </NavLink>
+        </nav>
+        
+        <div class="mt-auto pt-6 border-t border-white/5 space-y-2">
+            <button class="w-full bg-primary-container text-on-primary-container py-3 rounded-xl font-bold active:scale-95 transition-transform mb-4 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm">add</span> Yeni Kayıt
+            </button>
+            <a href="#" class="flex items-center gap-4 px-4 py-2 text-zinc-500 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                <span class="font-label text-sm">Çıkış</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="flex-1 md:ml-64 relative z-10 flex flex-col min-h-screen">
+        
+        <!-- TopNavBar -->
+        <header class="fixed top-0 w-full md:w-[calc(100%-16rem)] z-40 bg-zinc-950/70 backdrop-blur-xl border-b border-white/5 flex justify-between items-center px-8 h-20 shadow-[0_20_40px_rgba(107,254,156,0.06)]">
+            <div class="flex items-center space-x-4 flex-1">
+                <div class="relative w-full max-w-md hidden lg:block">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">search</span>
+                    <input type="text" placeholder="Hayvan veya küpe no ara..."
+                           class="w-full bg-surface-container-lowest border-none rounded-md pl-10 py-2.5 text-sm focus:ring-1 focus:ring-primary/30 transition-all text-on-surface" />
+                </div>
+                <h1 class="text-2xl font-bold tracking-tighter text-emerald-400 font-headline md:hidden">Livestock Elite</h1>
+            </div>
+            
+            <!-- User Identity Area -->
+            <AuthorizeView>
+                <Authorized>
+                    <div class="flex items-center space-x-6">
+                        <div class="flex items-center space-x-4">
+                            <button class="relative p-2 text-zinc-400 hover:text-emerald-400 transition-colors active:scale-95">
+                                <span class="material-symbols-outlined text-xl">notifications</span>
+                                <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-zinc-950"></span>
+                            </button>
+                        </div>
+                        
+                        <div class="h-8 w-px bg-white/5"></div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-xs font-semibold text-white">@context.User.Identity?.Name</p>
+                                <p class="text-[10px] text-primary uppercase tracking-wider">@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 text-primary font-bold">
+                                @(context.User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                            </div>
+                            <button @onclick="Logout" class="text-on-surface-variant hover:text-error transition-colors ml-3">
+                                <span class="material-symbols-outlined text-xl">logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 pt-24 pb-20 px-4 sm:px-8 max-w-[1600px] mx-auto w-full">
+            <AuthorizeView>
+                <Authorized>
+                    @Body
+                </Authorized>
+            </AuthorizeView>
+        </main>
+        
+    </div>
+
+    <!-- Bottom Navigation for Mobile -->
+    <nav class="fixed bottom-0 left-0 right-0 h-16 bg-zinc-900/90 backdrop-blur-xl border-t border-white/5 flex items-center justify-around md:hidden z-50">
+        <NavLink href="" Match="NavLinkMatch.All" class="flex flex-col items-center text-zinc-500" ActiveClass="text-emerald-400">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px] font-medium mt-1">Panel</span>
+        </NavLink>
+        <NavLink href="animals" class="flex flex-col items-center text-zinc-500" ActiveClass="text-emerald-400">
+            <span class="material-symbols-outlined">pets</span>
+            <span class="text-[10px] font-medium mt-1">Sürü</span>
+        </NavLink>
+        <div class="-mt-8">
+            <button class="w-12 h-12 bg-primary text-on-primary-container rounded-full shadow-[0_0_15px_rgba(107,254,156,0.3)] flex items-center justify-center active:scale-90 transition-transform glow-hover border-4 border-background">
+                <span class="material-symbols-outlined">add</span>
+            </button>
+        </div>
+        <NavLink href="animal-analysis" class="flex flex-col items-center text-zinc-500" ActiveClass="text-emerald-400">
+            <span class="material-symbols-outlined">psychology</span>
+            <span class="text-[10px] font-medium mt-1">AI</span>
+        </NavLink>
+        <button @onclick="Logout" class="flex flex-col items-center text-zinc-500 hover:text-error">
+            <span class="material-symbols-outlined">logout</span>
+            <span class="text-[10px] font-medium mt-1">Çıkış</span>
+        </button>
+    </nav>
+
+</div>
+
+@code {
+    [Inject] public IAuthService AuthService { get; set; } = default!;
+    [Inject] public NavigationManager Navigation { get; set; } = default!;
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("auth");
+    }
+}
