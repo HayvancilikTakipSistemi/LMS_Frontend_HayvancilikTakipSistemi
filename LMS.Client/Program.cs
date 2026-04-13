@@ -10,7 +10,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-var apiUrl = builder.Configuration["ApiUrl"] ?? "https://localhost:7173";
+var apiUrl = builder.Configuration["ApiUrl"] ?? "http://localhost:5171";
 
 // Register Services
 builder.Services.AddBlazoredLocalStorage();

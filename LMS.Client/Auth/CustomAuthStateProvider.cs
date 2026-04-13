@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 
 namespace LMS.Client.Auth
@@ -19,16 +20,31 @@ namespace LMS.Client.Auth
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
-
-            if (string.IsNullOrWhiteSpace(savedToken))
+            try
             {
+                var savedToken = await _localStorage.GetItemAsync<string>("token");
+
+                if (string.IsNullOrWhiteSpace(savedToken))
+                {
+                    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                }
+
+                // Check if token is expired
+                if (IsTokenExpired(savedToken))
+                {
+                    await _localStorage.RemoveItemAsync("token");
+                    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                }
+
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Auth state retrieval error: {ex.Message}");
                 return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
             }
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
-
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
         }
 
         public void NotifyUserAuthentication(string token)
@@ -44,19 +60,60 @@ namespace LMS.Client.Auth
             NotifyAuthenticationStateChanged(authState);
         }
 
+        private bool IsTokenExpired(string token)
+        {
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                return jwtToken.ValidTo < DateTime.UtcNow;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
         private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
         {
             var claims = new List<Claim>();
-            var payload = jwt.Split('.')[1];
-            var jsonBytes = ParseBase64WithoutPadding(payload);
-            var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
-
-            if (keyValuePairs != null)
+            try
             {
-                foreach (var kvp in keyValuePairs)
+                var payload = jwt.Split('.')[1];
+                var jsonBytes = ParseBase64WithoutPadding(payload);
+                var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+
+                if (keyValuePairs != null)
                 {
-                    claims.Add(new Claim(kvp.Key, kvp.Value.ToString() ?? ""));
+                    foreach (var kvp in keyValuePairs)
+                    {
+                        var claimValue = kvp.Value?.ToString() ?? "";
+                        
+                        // Handle role claims which can be arrays
+                        if (kvp.Key == "role" && kvp.Value is JsonElement element)
+                        {
+                            if (element.ValueKind == JsonValueKind.Array)
+                            {
+                                foreach (var role in element.EnumerateArray())
+                                {
+                                    claims.Add(new Claim(ClaimTypes.Role, role.GetString() ?? ""));
+                                }
+                            }
+                            else
+                            {
+                                claims.Add(new Claim(ClaimTypes.Role, element.GetString() ?? ""));
+                            }
+                        }
+                        else
+                        {
+                            claims.Add(new Claim(kvp.Key, claimValue));
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"JWT parsing error: {ex.Message}");
             }
 
             return claims;

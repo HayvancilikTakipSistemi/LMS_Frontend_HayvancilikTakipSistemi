@@ -34,6 +34,10 @@ namespace LMS.Shared.Entities
         
         public DateTime KayitTarihi { get; set; } = DateTime.Now;
 
-        public ICollection<Hayvan>? Hayvanlar { get; set; }
+        // Navigation Properties
+        public virtual ICollection<Hayvan> Hayvanlar { get; set; } = new List<Hayvan>();
+        public virtual ICollection<Ahir> Ahirlar { get; set; } = new List<Ahir>();
+        public virtual ICollection<Satis> Satislar { get; set; } = new List<Satis>();
+        public virtual ICollection<Personel> Personelleri { get; set; } = new List<Personel>();
     }
 }

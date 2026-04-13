@@ -1,0 +1,292 @@
+@page "/auth/login"
+@page "/login"
+@using Blazored.LocalStorage
+@using LMS.Client.Auth
+@using LMS.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@layout EmptyLayout
+
+<div class="login-container">
+    <div class="login-card">
+        <h1 class="login-title">Livestock Management System</h1>
+        <p class="login-subtitle">Çiftlik Yönetim Sistemi</p>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @errorMessage
+                <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+            </div>
+        }
+
+        @if (showRegister)
+        {
+            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <InputText id="firstName" class="form-control" @bind-Value="registerModel.FirstName" placeholder="Enter first name" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <InputText id="lastName" class="form-control" @bind-Value="registerModel.LastName" placeholder="Enter last name" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="regEmail" class="form-label">Email</label>
+                    <InputText id="regEmail" type="email" class="form-control" @bind-Value="registerModel.Email" placeholder="Enter email" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <InputText id="phone" class="form-control" @bind-Value="registerModel.PhoneNumber" placeholder="Enter phone number" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <InputText id="address" class="form-control" @bind-Value="registerModel.Address" placeholder="Enter farm address" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="regPassword" class="form-label">Password</label>
+                    <InputText id="regPassword" type="password" class="form-control" @bind-Value="registerModel.Password" placeholder="Enter password" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <InputText id="confirmPassword" type="password" class="form-control" @bind-Value="registerModel.ConfirmPassword" placeholder="Confirm password" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-2" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    }
+                    Register
+                </button>
+
+                <button type="button" class="btn btn-link w-100" @onclick="() => { showRegister = false; errorMessage = string.Empty; }">
+                    Already have an account? Login
+                </button>
+            </EditForm>
+        }
+        else
+        {
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <InputText id="email" type="email" class="form-control" @bind-Value="loginModel.Email" placeholder="Enter your email" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password" placeholder="Enter your password" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-2" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    }
+                    Login
+                </button>
+
+                <button type="button" class="btn btn-link w-100" @onclick="() => { showRegister = true; errorMessage = string.Empty; }">
+                    Don't have an account? Register
+                </button>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private RegisterModel registerModel = new();
+    private bool showRegister = false;
+    private bool isLoading = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var result = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
+            if (result)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Login failed. Please check your credentials.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        if (registerModel.Password != registerModel.ConfirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var result = await AuthService.RegisterAsync(
+                registerModel.FirstName,
+                registerModel.LastName,
+                registerModel.Email,
+                registerModel.Password,
+                registerModel.PhoneNumber,
+                registerModel.Address
+            );
+
+            if (result)
+            {
+                errorMessage = "Registration successful! Please login with your credentials.";
+                showRegister = false;
+                loginModel.Email = registerModel.Email;
+                loginModel.Password = string.Empty;
+                registerModel = new();
+            }
+            else
+            {
+                errorMessage = "Registration failed. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class RegisterModel
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+    }
+}
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .login-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-title {
+        color: #333;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+
+    .login-subtitle {
+        color: #666;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        background-color: #667eea;
+        border-color: #667eea;
+        font-weight: 600;
+        padding: 0.75rem;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background-color: #5568d3;
+        border-color: #5568d3;
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-link {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+    .btn-link:hover {
+        color: #5568d3;
+        text-decoration: underline;
+    }
+
+    .alert {
+        margin-bottom: 1rem;
+    }
+</style>

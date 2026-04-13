@@ -1,107 +1,173 @@
-using LMS.Server.Data;
-using LMS.Shared.DTOs.Auth;
 using LMS.Shared.Entities;
-using LMS.Shared.Enums;
+using LMS.Server.Models;
+using LMS.Server.Repositories;
+using LMS.Server.Services;
+using LMS.Shared.DTOs.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace LMS.Server.Controllers;
-
-[Route("api/[controller]")]
-[ApiController]
-public class AuthController : ControllerBase
+namespace LMS.Server.Controllers
 {
-    private readonly AppDbContext _context;
-    private readonly IConfiguration _configuration;
-
-    public AuthController(AppDbContext context, IConfiguration configuration)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
     {
-        _context = context;
-        _configuration = configuration;
-    }
+        private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ITokenService _tokenService;
+        private readonly IGenericRepository<Farmer> _farmerRepository;
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
-    {
-        if (await _context.Kullanicilar.AnyAsync(u => u.KullaniciAdi == dto.Username))
-            return BadRequest("Bu kullanıcı adı zaten alınmış.");
-
-        var user = new Kullanici
+        public AuthController(
+            UserManager<AppUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            ITokenService tokenService,
+            IGenericRepository<Farmer> farmerRepository)
         {
-            KullaniciAdi = dto.Username,
-            SifreHash = HashPassword(dto.Password),
-            Rol = (Role)dto.RoleId
-        };
-
-        _context.Kullanicilar.Add(user);
-        await _context.SaveChangesAsync();
-
-        // Eğer rol Çiftçi ise otomatik bir Çiftçi profili oluştur ve bağla
-        if (user.Rol == Role.Ciftci)
-        {
-            var ciftci = new Ciftci
-            {
-                Ad = user.KullaniciAdi, // Varsayılan olarak kullanıcı adını ad olarak kullan
-                Soyad = "Kullanıcısı",
-                KayitTarihi = DateTime.Now
-            };
-            _context.Ciftciler.Add(ciftci);
-            await _context.SaveChangesAsync();
-
-            user.BagliCiftciID = ciftci.CiftciID;
-            await _context.SaveChangesAsync();
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _tokenService = tokenService;
+            _farmerRepository = farmerRepository;
         }
 
-        return Ok("Kayıt başarılı.");
-    }
-
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto)
-    {
-        var passwordHash = HashPassword(dto.Password);
-        var user = await _context.Kullanicilar.FirstOrDefaultAsync(u => u.KullaniciAdi == dto.Username && u.SifreHash == passwordHash);
-
-        if (user == null || !user.AktifMi)
-            return Unauthorized("Geçersiz kullanıcı adı veya şifre.");
-
-        var token = GenerateJwtToken(user);
-        return Ok(new { Token = token });
-    }
-
-    private string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(bytes);
-    }
-
-    private string GenerateJwtToken(Kullanici user)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "FallbackSecretKey");
-
-        var claims = new List<Claim>
+        /// <summary>
+        /// Register a new farmer account
+        /// </summary>
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] AuthDto dto)
         {
-            new Claim(ClaimTypes.NameIdentifier, user.KullaniciID.ToString()),
-            new Claim(ClaimTypes.Name, user.KullaniciAdi),
-            new Claim(ClaimTypes.Role, user.Rol.ToString())
-        };
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-        var tokenDescriptor = new SecurityTokenDescriptor
+                // Check if email already exists
+                var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+                if (existingUser != null)
+                    return BadRequest(new { message = "Email already registered" });
+
+                // Create new farmer for this user
+                var newFarmer = new Farmer
+                {
+                    FirstName = dto.FirstName ?? "User",
+                    LastName = dto.LastName ?? "",
+                    Email = dto.Email,
+                    PhoneNumber = dto.PhoneNumber,
+                    Address = dto.Address
+                };
+
+                await _farmerRepository.AddAsync(newFarmer);
+                await _farmerRepository.SaveChangesAsync();
+
+                // Create AppUser
+                var appUser = new AppUser
+                {
+                    UserName = dto.Email,
+                    Email = dto.Email,
+                    FullName = $"{dto.FirstName} {dto.LastName}",
+                    FarmerId = newFarmer.FarmerID
+                };
+
+                var createUserResult = await _userManager.CreateAsync(appUser, dto.Password);
+                if (!createUserResult.Succeeded)
+                {
+                    return BadRequest(new { message = "User creation failed", errors = createUserResult.Errors });
+                }
+
+                // Assign Farmer role
+                var assignRoleResult = await _userManager.AddToRoleAsync(appUser, "Farmer");
+                if (!assignRoleResult.Succeeded)
+                {
+                    return BadRequest(new { message = "Failed to assign role", errors = assignRoleResult.Errors });
+                }
+
+                return Ok(new { message = "Registration successful", farmerId = newFarmer.FarmerID });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred during registration", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Login with email and password
+        /// </summary>
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] AuthDto dto)
         {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddDays(7),
-            Issuer = _configuration["Jwt:Issuer"],
-            Audience = _configuration["Jwt:Audience"],
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+                var user = await _userManager.FindByEmailAsync(dto.Email);
+                if (user == null)
+                    return Unauthorized(new { message = "Invalid email or password" });
+
+                var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
+                if (!passwordValid)
+                    return Unauthorized(new { message = "Invalid email or password" });
+
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+
+                // Generate JWT token
+                var token = _tokenService.GenerateJwtToken(user, roles);
+
+                return Ok(new AuthResponseDto
+                {
+                    Token = token,
+                    UserID = user.Id,
+                    Email = user.Email,
+                    FullName = user.FullName,
+                    FarmerId = user.FarmerId ?? 0,
+                    Role = roles.FirstOrDefault() ?? "User"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred during login", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Refresh JWT token (optional - for token refresh flow)
+        /// </summary>
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody] AuthResponseDto dto)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(dto.UserID);
+                if (user == null)
+                    return Unauthorized(new { message = "User not found" });
+
+                var roles = await _userManager.GetRolesAsync(user);
+                var newToken = _tokenService.GenerateJwtToken(user, roles);
+
+                return Ok(new AuthResponseDto
+                {
+                    Token = newToken,
+                    UserID = user.Id,
+                    Email = user.Email,
+                    FullName = user.FullName,
+                    FarmerId = user.FarmerId ?? 0,
+                    Role = roles.FirstOrDefault() ?? "User"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Token refresh failed", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Logout (token invalidation on client side - stateless JWT)
+        /// </summary>
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // With JWT, logout is handled client-side by removing the token
+            return Ok(new { message = "Logged out successfully" });
+        }
     }
 }
