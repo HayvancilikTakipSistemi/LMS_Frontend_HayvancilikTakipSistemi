@@ -17,6 +17,7 @@ builder.Services.AddSwaggerGen();
 
 // Register Custom Services
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(Repository<>));
 
 // Configure CORS for Blazor WASM

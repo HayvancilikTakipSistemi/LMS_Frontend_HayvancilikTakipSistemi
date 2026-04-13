@@ -1,5 +1,5 @@
 using LMS.Shared.DTOs.AI;
-using LMS.Shared.Entities;
+using LMS.Shared.DTOs;
 using System.Net.Http.Json;
 
 namespace LMS.Client.Services
@@ -13,35 +13,35 @@ namespace LMS.Client.Services
             _httpClient = httpClient;
         }
 
-        public async Task<List<Hayvan>?> GetAnimalsAsync()
+        public async Task<List<AnimalDto>?> GetAnimalsAsync()
         {
-            return await _httpClient.GetFromJsonAsync<List<Hayvan>>("api/hayvanlar");
+            return await _httpClient.GetFromJsonAsync<List<AnimalDto>>("api/Animal");
         }
 
-        public async Task<Hayvan?> GetAnimalByIdAsync(int id)
+        public async Task<AnimalDto?> GetAnimalByIdAsync(int id)
         {
-            return await _httpClient.GetFromJsonAsync<Hayvan>($"api/hayvanlar/{id}");
+            return await _httpClient.GetFromJsonAsync<AnimalDto>($"api/Animal/{id}");
         }
 
-        public async Task<Hayvan?> AddAnimalAsync(Hayvan animal)
+        public async Task<AnimalDto?> AddAnimalAsync(AnimalDto animal)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/hayvanlar", animal);
+            var response = await _httpClient.PostAsJsonAsync("api/Animal", animal);
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<Hayvan>();
+                return await response.Content.ReadFromJsonAsync<AnimalDto>();
             }
             return null;
         }
 
         public async Task<bool> DeleteAnimalAsync(int id)
         {
-            var response = await _httpClient.DeleteAsync($"api/hayvanlar/{id}");
+            var response = await _httpClient.DeleteAsync($"api/Animal/{id}");
             return response.IsSuccessStatusCode;
         }
 
         public async Task<AIAnalysisResultDto?> AnalyzeAnimalAsync(int id)
         {
-            return await _httpClient.GetFromJsonAsync<AIAnalysisResultDto>($"api/hayvanlar/{id}/analyze");
+            return await _httpClient.GetFromJsonAsync<AIAnalysisResultDto>($"api/Animal/{id}/analyze");
         }
     }
 }

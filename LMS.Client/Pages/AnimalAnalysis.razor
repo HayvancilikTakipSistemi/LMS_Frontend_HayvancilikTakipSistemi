@@ -1,5 +1,6 @@
 @page "/animal-analysis"
 @page "/animal-analysis/{Id:int}"
+@using LMS.Shared.DTOs
 @attribute [Authorize]
 @attribute [Authorize]
 
@@ -49,7 +50,7 @@
                     <div>
                         <h3 class="text-2xl font-headline font-extrabold text-white tracking-wider">@(animal?.KupeNo ?? "Yükleniyor...")</h3>
                         <p class="text-primary text-sm font-semibold flex items-center gap-1 mt-0.5">
-                            <span class="material-symbols-outlined text-xs">@(animal?.Cinsiyet == "D" ? "female" : "male")</span> @(animal?.Cinsiyet == "D" ? "Dişi" : "Erkek")
+                            <span class="material-symbols-outlined text-xs">@(animal?.Gender == "D" ? "female" : "male")</span> @(animal?.Gender == "D" ? "Dişi" : "Erkek")
                         </p>
                     </div>
                 </div>
@@ -61,11 +62,11 @@
                     </div>
                     <div class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10">
                         <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1 block">Laktasyon</span>
-                        <span class="text-white font-medium text-sm">@(animal?.Cinsiyet == "D" ? "Aktif" : "Yok")</span>
+                        <span class="text-white font-medium text-sm">@(animal?.Gender == "D" ? "Aktif" : "Yok")</span>
                     </div>
                     <div class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10 col-span-2 flex justify-between items-center">
                         <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Doğum Tarihi</span>
-                        <span class="text-white font-medium text-sm">@(animal?.DogumTarihi?.ToString("dd MMMM yyyy") ?? "-")</span>
+                        <span class="text-white font-medium text-sm">@(animal?.BirthDate?.ToString("dd MMMM yyyy") ?? "-")</span>
                     </div>
                 </div>
             </div>
@@ -118,7 +119,7 @@
                     </div>
                     <div class="mt-6">
                         <div class="flex items-end gap-2 text-white">
-                            <span class="text-4xl font-headline font-bold">@((animal?.Cinsiyet == "D" && analysisResult != null) ? "28.4" : "-")</span>
+                            <span class="text-4xl font-headline font-bold">@((animal?.Gender == "D" && analysisResult != null) ? "28.4" : "-")</span>
                             <span class="text-sm text-on-surface-variant mb-1">Litre/Gün</span>
                         </div>
                         <div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-3">
@@ -219,7 +220,7 @@
 
     [Inject] public IAnimalService AnimalService { get; set; } = default!;
 
-    private Hayvan? animal;
+    private AnimalDto? animal;
     private AIAnalysisResultDto? analysisResult;
 
     protected override async Task OnInitializedAsync()
@@ -230,6 +231,7 @@
             analysisResult = await AnimalService.AnalyzeAnimalAsync(Id.Value);
         }
     }
+// ... rest of the code remains same but uses animal.Gender and animal.BirthDate
 
     private string GetRiskColor()
     {

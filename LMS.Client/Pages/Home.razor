@@ -1,4 +1,5 @@
 @page "/"
+@using LMS.Shared.DTOs
 @attribute [Authorize]
 
 <div class="space-y-8">
@@ -190,7 +191,7 @@
                     <span class="material-symbols-outlined" data-icon="monitor_heart">monitor_heart</span>
                 </div>
                 <div class="flex-1">
-                    <h4 class="text-sm font-bold text-white group-hover:text-primary transition-colors">İnek #402: Düşük Hareketlilik</h4>
+                    <h4 class="text-sm font-bold text-white group-hover:text-primary transition-colors">Hayvan #402: Düşük Hareketlilik</h4>
                     <p class="text-xs text-zinc-500">Sektör B-12 | Hareket oranı normalin %40 altında.</p>
                 </div>
                 <div class="text-right flex flex-col items-end space-y-2">
@@ -204,7 +205,7 @@
                     <span class="material-symbols-outlined" data-icon="thermostat">thermostat</span>
                 </div>
                 <div class="flex-1">
-                    <h4 class="text-sm font-bold text-white group-hover:text-primary transition-colors">Koyun #12: Sıcaklık Artışı</h4>
+                    <h4 class="text-sm font-bold text-white group-hover:text-primary transition-colors">Hayvan #12: Sıcaklık Artışı</h4>
                     <p class="text-xs text-zinc-500">Karantina Bölgesi | Vücut sıcaklığı 40.2°C olarak tespit edildi.</p>
                 </div>
                 <div class="text-right flex flex-col items-end space-y-2">
@@ -218,7 +219,7 @@
                     <span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
                 </div>
                 <div class="flex-1">
-                    <h4 class="text-sm font-bold text-white group-hover:text-primary transition-colors">İnek #288: Doğum Tamamlandı</h4>
+                    <h4 class="text-sm font-bold text-white group-hover:text-primary transition-colors">Hayvan #288: Doğum Tamamlandı</h4>
                     <p class="text-xs text-zinc-500">Doğumhane A | Anne ve buzağı durumu sağlıklı.</p>
                 </div>
                 <div class="text-right flex flex-col items-end space-y-2">
@@ -234,7 +235,7 @@
 @code {
     [Inject] public IAnimalService AnimalService { get; set; } = default!;
 
-    private List<Hayvan>? animals;
+    private List<AnimalDto>? animals;
 
     protected override async Task OnInitializedAsync()
     {
@@ -243,17 +244,17 @@
 
     private int GetHealthyCount()
     {
-        return animals?.Count(x => x.HayvanDurumID == 1) ?? 0;
+        return animals?.Count(x => x.AnimalStatusID == 1) ?? 0;
     }
 
     private int GetObservationCount()
     {
-        return animals?.Count(x => x.HayvanDurumID == 2) ?? 0;
+        return animals?.Count(x => x.AnimalStatusID == 2) ?? 0;
     }
 
     private int GetCriticalCount()
     {
-        return animals?.Count(x => x.HayvanDurumID > 2) ?? 0; // everything else is critical (3, 4, 5)
+        return animals?.Count(x => x.AnimalStatusID > 2) ?? 0; // everything else is critical (3, 4, 5)
     }
 
     private decimal GetPercentage(int count)

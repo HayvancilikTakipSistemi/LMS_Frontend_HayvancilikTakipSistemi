@@ -1,13 +1,13 @@
 using LMS.Shared.DTOs.AI;
-using LMS.Shared.Entities;
+using LMS.Shared.DTOs;
 
 namespace LMS.Client.Services
 {
     public interface IAnimalService
     {
-        Task<List<Hayvan>?> GetAnimalsAsync();
-        Task<Hayvan?> GetAnimalByIdAsync(int id);
-        Task<Hayvan?> AddAnimalAsync(Hayvan animal);
+        Task<List<AnimalDto>?> GetAnimalsAsync();
+        Task<AnimalDto?> GetAnimalByIdAsync(int id);
+        Task<AnimalDto?> AddAnimalAsync(AnimalDto animal);
         Task<bool> DeleteAnimalAsync(int id);
         Task<AIAnalysisResultDto?> AnalyzeAnimalAsync(int id);
     }

@@ -1,0 +1,131 @@
+@page "/dashboard"
+@using LMS.Shared.DTOs
+@using LMS.Shared.Entities
+@using LMS.Client.Services
+@attribute [Authorize]
+@inject IAnimalService AnimalService
+@inject IVaccinationRecordService VaccineService
+
+<div class="space-y-8">
+    <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div class="space-y-2">
+            <h2 class="text-4xl font-headline font-extrabold text-white tracking-tight">Kontrol Paneli</h2>
+            <p class="text-on-surface-variant max-w-xl">Çiftliğinizin genel sağlık ve operasyonel özetini buradan takip edin.</p>
+        </div>
+    </div>
+
+    @if (animals == null || vaccinations == null)
+    {
+        <div class="glass-card p-12 rounded-2xl flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined animate-spin text-primary text-4xl mb-4">hourglass_empty</span>
+            <p class="text-on-surface-variant">Veriler yükleniyor...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total Animals Card -->
+            <div class="glass-card p-8 rounded-3xl relative overflow-hidden group hover:shadow-[0_0_40px_rgba(107,254,156,0.1)] transition-all">
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Toplam Hayvan</p>
+                        <h3 class="text-5xl font-headline font-bold text-white">@animals.Count</h3>
+                    </div>
+                    <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                        <span class="material-symbols-outlined text-3xl">pets</span>
+                    </div>
+                </div>
+                <div class="mt-6 flex items-center gap-2 relative z-10">
+                    <span class="flex items-center text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg border border-primary/20">
+                        <span class="material-symbols-outlined text-xs mr-1">trending_up</span> +%3
+                    </span>
+                    <span class="text-[10px] text-on-surface-variant uppercase tracking-wider">Geçen aya göre</span>
+                </div>
+                <!-- Abstract Glow -->
+                <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-primary/5 blur-3xl group-hover:bg-primary/10 transition-all"></div>
+            </div>
+
+            <!-- Sick Animals Card -->
+            <div class="glass-card p-8 rounded-3xl relative overflow-hidden group hover:shadow-[0_0_40px_rgba(255,82,82,0.1)] transition-all">
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Hasta Sayısı</p>
+                        <h3 class="text-5xl font-headline font-bold text-white">@sickCount</h3>
+                    </div>
+                    <div class="w-14 h-14 bg-error/10 rounded-2xl flex items-center justify-center text-error border border-error/20">
+                        <span class="material-symbols-outlined text-3xl">medical_services</span>
+                    </div>
+                </div>
+                <div class="mt-6 flex items-center gap-2 relative z-10">
+                    @if (sickCount > 0)
+                    {
+                        <span class="flex items-center text-[10px] font-bold text-error bg-error/10 px-2 py-1 rounded-lg border border-error/20">
+                            <span class="material-symbols-outlined text-xs mr-1">warning</span> Dikkat Gerekli
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="flex items-center text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg border border-primary/20">
+                            <span class="material-symbols-outlined text-xs mr-1">check_circle</span> Sorun Yok
+                        </span>
+                    }
+                </div>
+                <!-- Abstract Glow -->
+                <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-error/5 blur-3xl group-hover:bg-error/10 transition-all"></div>
+            </div>
+
+            <!-- Upcoming Vaccines Card -->
+            <div class="glass-card p-8 rounded-3xl relative overflow-hidden group hover:shadow-[0_0_40px_rgba(100,181,246,0.1)] transition-all">
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Yaklaşan Aşılar</p>
+                        <h3 class="text-5xl font-headline font-bold text-white">@upcomingVaccinesCount</h3>
+                    </div>
+                    <div class="w-14 h-14 bg-tertiary/10 rounded-2xl flex items-center justify-center text-tertiary border border-tertiary/20">
+                        <span class="material-symbols-outlined text-3xl">vaccines</span>
+                    </div>
+                </div>
+                <div class="mt-6 flex items-center gap-2 relative z-10">
+                     <span class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Gelecek 30 Gün İçinde</span>
+                </div>
+                <!-- Abstract Glow -->
+                <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-tertiary/5 blur-3xl group-hover:bg-tertiary/10 transition-all"></div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<AnimalDto>? animals;
+    private List<VaccinationRecordDto>? vaccinations;
+    private int sickCount = 0;
+    private int upcomingVaccinesCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try 
+        {
+            animals = await AnimalService.GetAnimalsAsync();
+            vaccinations = await VaccineService.GetVaccinationRecordsAsync();
+
+            if (animals != null)
+            {
+                sickCount = animals.Count(a => a.AnimalStatusID == 2 || a.AnimalStatusID == 6); // Hasta veya Karantina
+            }
+
+            if (vaccinations != null)
+            {
+                upcomingVaccinesCount = vaccinations.Count(v => v.NextDate.HasValue && 
+                                                                v.NextDate.Value > DateTime.Now && 
+                                                                v.NextDate.Value <= DateTime.Now.AddDays(30));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
+            animals = new List<AnimalDto>();
+            vaccinations = new List<VaccinationRecordDto>();
+        }
+    }
+}

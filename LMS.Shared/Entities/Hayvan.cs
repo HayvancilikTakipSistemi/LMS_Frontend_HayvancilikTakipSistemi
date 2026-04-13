@@ -39,7 +39,7 @@ namespace LMS.Shared.Entities
         public virtual ICollection<Muayene> Muayeneler { get; set; } = new List<Muayene>();
         public virtual ICollection<AsiKaydi> AsiKayitlari { get; set; } = new List<AsiKaydi>();
         public virtual ICollection<SutKaydi> SutKayitlari { get; set; } = new List<SutKaydi>();
-        public virtual ICollection<YemKaydi> YemKayitlari { get; set; } = new List<YemKaydi>();
+        // public virtual ICollection<YemKaydi> YemKayitlari { get; set; } = new List<YemKaydi>();
         public virtual ICollection<SatisDetay> SatisDetaylari { get; set; } = new List<SatisDetay>();
     }
 }

@@ -3,7 +3,8 @@ using LMS.Shared.DTOs;
 using LMS.Shared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using LMS.Server.Data;
+using Microsoft.EntityFrameworkCore;
 namespace LMS.Server.Controllers
 {
     [Route("api/[controller]")]
@@ -12,10 +13,12 @@ namespace LMS.Server.Controllers
     public class AnimalController : ControllerBase
     {
         private readonly IGenericRepository<Animal> _animalRepository;
+        private readonly AppDbContext _context;
 
-        public AnimalController(IGenericRepository<Animal> animalRepository)
+        public AnimalController(IGenericRepository<Animal> animalRepository, AppDbContext context)
         {
             _animalRepository = animalRepository;
+            _context = context;
         }
 
         // GET: api/animal
@@ -69,6 +72,53 @@ namespace LMS.Server.Controllers
             };
 
             return Ok(animalDto);
+        }
+
+        // GET: api/animal/5/healthhistory
+        [HttpGet("{id}/healthhistory")]
+        public async Task<IActionResult> GetAnimalHealthHistory(int id)
+        {
+            var results = new List<Dictionary<string, object>>();
+            var connection = _context.Database.GetDbConnection();
+            try
+            {
+                if (connection.State != System.Data.ConnectionState.Open)
+                    await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                // Varsayılan olarak @HayvanID parametresini gönderiyoruz. 
+                // Eğer SP farklı bir parametre adı kullanıyorsa (ör. @AnimalID), hata yönetiminde değiştirmemiz gerekebilir.
+                command.CommandText = "EXEC sp_HayvanSaglikGecmisi @HayvanID";
+
+                var param = command.CreateParameter();
+                param.ParameterName = "@HayvanID";
+                param.Value = id;
+                command.Parameters.Add(param);
+
+                using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var row = new Dictionary<string, object>();
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        var colName = reader.GetName(i);
+                        var value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                        row.Add(colName, value);
+                    }
+                    results.Add(row);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Stored Procedure çalıştırılırken bir hata oluştu: {ex.Message}");
+            }
+            finally
+            {
+                // Entity Framework bağlantı havuzunu yönetse de, açık olan bağlantıyı güvenli şekilde bırakmak iyidir.
+                // EF Core kendi yönettiği bağlantıları genellikle Dispose sırasında kapatır ama manuel Open işlemlerine dikkat etmekte fayda var.
+            }
+
+            return Ok(results);
         }
 
         // POST: api/animal

@@ -4,6 +4,7 @@ using LMS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LMS.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413221524_AddVaccine")]
+    partial class AddVaccine
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -474,88 +477,6 @@ namespace LMS.Server.Migrations
                     b.ToTable("Farmers");
                 });
 
-            modelBuilder.Entity("LMS.Shared.Entities.Feed", b =>
-                {
-                    b.Property<int>("FeedID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FeedID"));
-
-                    b.Property<string>("FeedName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("FeedTypeID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("StockQuantity")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("FeedID");
-
-                    b.HasIndex("FeedTypeID");
-
-                    b.ToTable("Feeds");
-                });
-
-            modelBuilder.Entity("LMS.Shared.Entities.FeedRecord", b =>
-                {
-                    b.Property<int>("FeedRecordID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FeedRecordID"));
-
-                    b.Property<int>("AnimalID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FeedID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("QuantityKg")
-                        .HasColumnType("decimal(6,2)");
-
-                    b.Property<DateTime>("RecordDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("FeedRecordID");
-
-                    b.HasIndex("AnimalID");
-
-                    b.HasIndex("FeedID");
-
-                    b.ToTable("FeedRecords");
-                });
-
-            modelBuilder.Entity("LMS.Shared.Entities.FeedType", b =>
-                {
-                    b.Property<int>("FeedTypeID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FeedTypeID"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("TypeName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("FeedTypeID");
-
-                    b.ToTable("FeedTypes");
-                });
-
             modelBuilder.Entity("LMS.Shared.Entities.VaccinationRecord", b =>
                 {
                     b.Property<int>("VaccinationRecordID")
@@ -893,36 +814,6 @@ namespace LMS.Server.Migrations
                     b.Navigation("Examination");
                 });
 
-            modelBuilder.Entity("LMS.Shared.Entities.Feed", b =>
-                {
-                    b.HasOne("LMS.Shared.Entities.FeedType", "FeedType")
-                        .WithMany("Feeds")
-                        .HasForeignKey("FeedTypeID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("FeedType");
-                });
-
-            modelBuilder.Entity("LMS.Shared.Entities.FeedRecord", b =>
-                {
-                    b.HasOne("LMS.Shared.Entities.Animal", "Animal")
-                        .WithMany()
-                        .HasForeignKey("AnimalID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("LMS.Shared.Entities.Feed", "Feed")
-                        .WithMany("FeedRecords")
-                        .HasForeignKey("FeedID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Animal");
-
-                    b.Navigation("Feed");
-                });
-
             modelBuilder.Entity("LMS.Shared.Entities.VaccinationRecord", b =>
                 {
                     b.HasOne("LMS.Shared.Entities.Animal", "Animal")
@@ -1040,16 +931,6 @@ namespace LMS.Server.Migrations
                     b.Navigation("Animals");
 
                     b.Navigation("Barns");
-                });
-
-            modelBuilder.Entity("LMS.Shared.Entities.Feed", b =>
-                {
-                    b.Navigation("FeedRecords");
-                });
-
-            modelBuilder.Entity("LMS.Shared.Entities.FeedType", b =>
-                {
-                    b.Navigation("Feeds");
                 });
 
             modelBuilder.Entity("LMS.Shared.Entities.Vaccine", b =>

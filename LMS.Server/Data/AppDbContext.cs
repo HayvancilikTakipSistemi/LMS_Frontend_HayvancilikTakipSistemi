@@ -18,6 +18,21 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<AnimalStatus> AnimalStatuses { get; set; }
     public DbSet<Barn> Barns { get; set; }
     public DbSet<AnimalType> AnimalTypes { get; set; }
+    public DbSet<Veterinarian> Veterinarians { get; set; }
+    public DbSet<Drug> Drugs { get; set; }
+    public DbSet<Examination> Examinations { get; set; }
+    public DbSet<ExaminationDrug> ExaminationDrugs { get; set; }
+    public DbSet<Vaccine> Vaccines { get; set; }
+    public DbSet<VaccinationRecord> VaccinationRecords { get; set; }
+    public DbSet<FeedType> FeedTypes { get; set; }
+    public DbSet<Feed> Feeds { get; set; }
+    public DbSet<FeedRecord> FeedRecords { get; set; }
+    public DbSet<SutKayit> SutKayitlari { get; set; }
+    public DbSet<GunlukSutOzet> GunlukSutOzetleri { get; set; }
+    public DbSet<Yem> Yemler { get; set; }
+    public DbSet<YemKayit> YemKayitlari { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -28,6 +43,22 @@ public class AppDbContext : IdentityDbContext<AppUser>
         {
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
+
+        // ExaminationDrug Configuration (Many-to-Many Composite Key)
+        modelBuilder.Entity<ExaminationDrug>()
+            .HasKey(ed => new { ed.ExaminationID, ed.DrugID });
+        
+        modelBuilder.Entity<ExaminationDrug>()
+            .HasOne(ed => ed.Examination)
+            .WithMany(e => e.ExaminationDrugs)
+            .HasForeignKey(ed => ed.ExaminationID)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ExaminationDrug>()
+            .HasOne(ed => ed.Drug)
+            .WithMany(d => d.ExaminationDrugs)
+            .HasForeignKey(ed => ed.DrugID)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Animal Self-Referencing Configuration (Fluent API)
         modelBuilder.Entity<Animal>()

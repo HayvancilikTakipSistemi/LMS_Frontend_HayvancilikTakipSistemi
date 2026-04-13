@@ -1,0 +1,52 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using LMS.Shared.Models
+@page "/animal/add"
+@page "/animal/edit/{Id:int}" 
+@inject LMS.Client.Services.IAnimalService AnimalService
+@inject NavigationManager Nav
+@using LMS.Shared.Models
+
+<h3>@(Id == 0 ? "Yeni Kayıt" : "Hayvanı Düzenle")</h3>
+
+<EditForm Model="hayvan" OnValidSubmit="Kaydet">
+    <div class="mb-3">
+        <label>Küpe No:</label>
+        <InputText @bind-Value="hayvan.KupeNo" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Cinsiyet:</label>
+        <InputSelect @bind-Value="hayvan.Cinsiyet" class="form-control">
+            <option value="Dişi">Dişi</option>
+            <option value="Erkek">Erkek</option>
+        </InputSelect>
+    </div>
+
+    <div class="mb-3">
+        <label>Doğum Tarihi:</label>
+        <InputDate @bind-Value="hayvan.DogumTarihi" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet ve Bitir</button>
+</EditForm>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    
+    private Hayvan hayvan = new() { DogumTarihi = DateTime.Now, Cinsiyet = "Dişi" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id != 0) 
+        {
+            hayvan = await AnimalService.GetHayvanByIdAsync(Id);
+        }
+    }
+
+    private async Task Kaydet()
+    {
+        await AnimalService.SaveHayvanAsync(hayvan);
+        Nav.NavigateTo("/animals"); 
+    }
+}

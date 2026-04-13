@@ -1,0 +1,29 @@
+@page "/animal/detail/{Id:int}"
+@inject LMS.Client.Services.IAnimalService AnimalService
+@using LMS.Shared.Models
+
+<h3>Hayvan Kimlik Kartı</h3>
+
+@if (hayvan == null)
+{
+    <p>Bilgiler yükleniyor bekle...</p>
+}
+else
+{
+    <div class="card p-3">
+        <p><b>Küpe Numarası:</b> @hayvan.KupeNo</p>
+        <p><b>Cinsiyeti:</b> @hayvan.Cinsiyet</p>
+        <p><b>Doğum Tarihi:</b> @hayvan.DogumTarihi.ToShortDateString()</p>
+        <a href="/animals" class="btn btn-secondary mt-3">Geri Dön</a>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Hayvan? hayvan;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hayvan = await AnimalService.GetHayvanByIdAsync(Id);
+    }
+}
