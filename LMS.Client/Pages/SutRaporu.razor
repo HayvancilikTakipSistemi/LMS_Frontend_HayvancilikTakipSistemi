@@ -1,0 +1,53 @@
+@page "/sut-raporu"
+@inject LMS_Frontend_HayvancilikTakipSistemi.Services.ISutService SutService
+@using LMS.Shared.Models
+
+<h3 class="mb-4">📈 Günlük Süt Raporu</h3>
+
+@if (raporlar == null)
+{
+    <p>Veriler yükleniyor...</p>
+}
+else
+{
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card bg-success text-white p-3">
+                <h5>Toplam Kazanç</h5>
+                <h3>₺ @raporlar.Sum(x => x.ToplamGelir).ToString("N2")</h3>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Tarih</th>
+                <th>Sağılan Hayvan</th>
+                <th>Toplam Litre</th>
+                <th>Gelir</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in raporlar)
+            {
+                <tr>
+                    <td>@r.KayitTarihi.ToShortDateString()</td>
+                    <td>@r.SagilanHayvanSayisi</td>
+                    <td>@r.ToplamLitre L</td>
+                    <td>₺ @r.ToplamGelir</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<GunlukSutOzet>? raporlar;
+
+    protected override async Task OnInitializedAsync()
+    {
+    
+        raporlar = await SutService.GetRaporAsync(1);
+    }
+}

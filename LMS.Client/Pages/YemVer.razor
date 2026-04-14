@@ -1,0 +1,38 @@
+@page "/yem-ver"
+@inject LMS_Frontend_HayvancilikTakipSistemi.Services.IYemService YemService
+@using LMS.Shared
+
+<h3>Hayvan Besleme Paneli</h3>
+
+<div class="card p-4">
+    <EditForm Model="kayit" OnValidSubmit="Kaydet">
+        <div class="mb-3">
+            <label>Hayvan ID:</label>
+            <InputNumber @bind-Value="kayit.HayvanID" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Yem ID:</label>
+            <InputNumber @bind-Value="kayit.YemID" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Miktar (Kg):</label>
+            <InputNumber @bind-Value="kayit.KullanilanMiktar" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-warning">Yemi Onayla</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(mesaj)) {
+        <div class="alert mt-3 @(mesaj.Contains("Başarıyla") ? "alert-success" : "alert-danger")">
+            @mesaj
+        </div>
+    }
+</div>
+
+@code {
+    private YemKayitDto kayit = new();
+    private string mesaj = "";
+
+    private async Task Kaydet() {
+        mesaj = await YemService.YemVerAsync(kayit);
+    }
+}

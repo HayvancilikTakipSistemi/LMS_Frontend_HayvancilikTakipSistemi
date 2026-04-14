@@ -24,5 +24,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiUrl) 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IVaccinationRecordService, VaccinationRecordService>();
+builder.Services.AddScoped<ISutService, SutService>();
+builder.Services.AddScoped<IYemService, YemService>();
 
 await builder.Build().RunAsync();

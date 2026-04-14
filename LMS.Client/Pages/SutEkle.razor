@@ -1,0 +1,34 @@
+@page "/sut-ekle"
+@inject LMS_Frontend_HayvancilikTakipSistemi.Services.ISutService SutService
+@inject NavigationManager Nav
+@using LMS.Shared.Models
+
+<h3>🥛 Günlük Süt Sağım Girişi</h3>
+
+<div class="card p-4 shadow-sm">
+    <EditForm Model="yeniKayit" OnValidSubmit="Kaydet">
+        <div class="mb-3">
+            <label>Hayvan ID:</label>
+            <InputNumber @bind-Value="yeniKayit.HayvanID" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Miktar (Litre):</label>
+            <InputNumber @bind-Value="yeniKayit.MiktarLitre" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Litre Fiyatı (₺):</label>
+            <InputNumber @bind-Value="yeniKayit.BirimFiyat" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Kaydı Tamamla</button>
+    </EditForm>
+</div>
+
+@code {
+    private SutKaydi yeniKayit = new() { KayitTarihi = DateTime.Now, BirimFiyat = 15 };
+
+    private async Task Kaydet()
+    {
+        await SutService.SutKaydetAsync(yeniKayit);
+        Nav.NavigateTo("/sut-raporu");
+    }
+}
