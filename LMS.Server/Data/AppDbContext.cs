@@ -1,4 +1,5 @@
 using LMS.Server.Models;
+using LMS.Shared.DTOs;
 using LMS.Shared.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -27,15 +28,23 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<FeedType> FeedTypes { get; set; }
     public DbSet<Feed> Feeds { get; set; }
     public DbSet<FeedRecord> FeedRecords { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<Sale> Sales { get; set; }
+    public DbSet<SaleDetail> SaleDetails { get; set; }
     public DbSet<SutKayit> SutKayitlari { get; set; }
     public DbSet<GunlukSutOzet> GunlukSutOzetleri { get; set; }
     public DbSet<Yem> Yemler { get; set; }
     public DbSet<YemKayit> YemKayitlari { get; set; }
-
+    public DbSet<Staff> Staffs { get; set; }
+    public DbSet<MoneyTransaction> MoneyTransactions { get; set; }
+    public DbSet<CiftciGelirRaporuDto> CiftciGelirRaporlari { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        // Stored procedure dönüş veri modeli (Keyless Entity)
+        modelBuilder.Entity<CiftciGelirRaporuDto>().HasNoKey().ToView(null);
 
         // Cascade delete'i kapatma - referans verileri silmeyi önle
         foreach (var relationship in modelBuilder.Model.GetEntityTypes()
