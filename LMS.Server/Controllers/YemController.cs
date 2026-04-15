@@ -9,10 +9,8 @@ namespace LMS.Server.Controllers
     [Route("api/[controller]")]
     public class YemController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        public YemController(ApplicationDbContext context) => _context = context;
-
- ß
+        private readonly AppDbContext _context;
+        public YemController(AppDbContext context) => _context = context;
         [HttpPost("yem-ver")]
         public async Task<IActionResult> YemVer(YemKayitDto dto)
         {

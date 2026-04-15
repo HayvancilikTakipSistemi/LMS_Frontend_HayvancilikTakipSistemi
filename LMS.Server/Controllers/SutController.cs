@@ -9,9 +9,9 @@ namespace LMS.Server.Controllers
     [Route("api/[controller]")]
     public class SutController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public SutController(ApplicationDbContext context)
+        public SutController(AppDbContext context)
         {
             _context = context;
         }
