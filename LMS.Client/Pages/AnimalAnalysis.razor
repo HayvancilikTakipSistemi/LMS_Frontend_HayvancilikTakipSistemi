@@ -1,0 +1,268 @@
+@page "/animal-analysis"
+@page "/animal-analysis/{Id:int}"
+@using LMS.Shared.DTOs
+@attribute [Authorize]
+@attribute [Authorize]
+
+<div class="space-y-8">
+
+    <!-- Header Section -->
+    <section class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="p-2 bg-primary/10 rounded-lg text-primary">
+                    <span class="material-symbols-outlined">psychology</span>
+                </div>
+                <span class="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold bg-surface-container-highest text-on-surface-variant border border-outline-variant/20">Sentient AI v1.2</span>
+            </div>
+            <h2 class="text-4xl font-headline font-extrabold text-white tracking-tight">Sağlık Analizi</h2>
+            @if (animal != null)
+            {
+                <p class="text-on-surface-variant max-w-xl mt-2 text-sm leading-relaxed">@animal.KupeNo küpe numaralı hayvanın derin öğrenme destekli yaşam döngüsü tahmini ve anlık risk raporu.</p>
+            }
+            else
+            {
+                <p class="text-on-surface-variant max-w-xl mt-2 text-sm leading-relaxed">Derin öğrenme destekli yaşam döngüsü tahmini ve anlık risk raporu yükleniyor...</p>
+            }
+        </div>
+        <div class="flex gap-3">
+            <button class="px-5 py-2.5 rounded-xl font-semibold text-sm text-on-surface-variant bg-surface-container-highest hover:bg-surface-bright transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">history</span> Geçmiş Ölçümler
+            </button>
+            <button class="px-5 py-2.5 rounded-xl font-bold text-sm bg-primary-container text-on-primary-container hover:shadow-[0_0_20px_rgba(107,254,156,0.3)] transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">auto_graph</span> Yeni Analiz Başlat
+            </button>
+        </div>
+    </section>
+
+    <!-- Main Grid Content -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <!-- Left Column: Core Subject -->
+        <div class="xl:col-span-1 space-y-6">
+            <!-- Animal Identity Card -->
+            <div class="glass-card p-6 rounded-3xl relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-700"></div>
+                <div class="flex items-center gap-5 mb-6">
+                    <div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center p-0.5 border border-outline-variant/20">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMs7iF_lI7L4qF0XGf01eF0T2Hl9R-bK1Lq_bT2uIq6mO5q015z8r6_LgG4Jz08pWqH4N6G-3rG1M4Q0M09lG0q8oU0I2Wv8pT01YyR-_92A7vC1v0wR-aQ-0Qc0R4e8G4xQp1s8s8fO0D5Y1LqQx-r4w9G4j_o1F_R2Y4j0k" class="w-full h-full object-cover rounded-xl grayscale opacity-70" />
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-headline font-extrabold text-white tracking-wider">@(animal?.KupeNo ?? "Yükleniyor...")</h3>
+                        <p class="text-primary text-sm font-semibold flex items-center gap-1 mt-0.5">
+                            <span class="material-symbols-outlined text-xs">@(animal?.Gender == "D" ? "female" : "male")</span> @(animal?.Gender == "D" ? "Dişi" : "Erkek")
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10">
+                        <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1 block">Vücut Yapısı</span>
+                        <span class="text-white font-medium text-sm">640 kg (Ort)</span>
+                    </div>
+                    <div class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10">
+                        <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1 block">Laktasyon</span>
+                        <span class="text-white font-medium text-sm">@(animal?.Gender == "D" ? "Aktif" : "Yok")</span>
+                    </div>
+                    <div class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10 col-span-2 flex justify-between items-center">
+                        <span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Doğum Tarihi</span>
+                        <span class="text-white font-medium text-sm">@(animal?.BirthDate?.ToString("dd MMMM yyyy") ?? "-")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Score Indicator Widget -->
+            <div class="glass-card p-6 rounded-3xl relative flex flex-col items-center justify-center min-h-[300px]">
+                <h4 class="absolute top-6 left-6 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Anlık Risk Skoru</h4>
+                
+                <div class="relative w-48 h-48 mt-4">
+                    <!-- Base Track -->
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <path d="M 10,50 A 40,40 0 1,1 90,50" fill="none" stroke="currentColor" stroke-width="6" class="text-surface-container-highest" stroke-linecap="round"></path>
+                        <!-- Glow Effect Definition -->
+                        <defs>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Value Track -->
+                        <path d="M 10,50 A 40,40 0 1,1 90,50" fill="none" stroke="currentColor" stroke-width="6" class="@GetRiskColor() transition-all duration-1000" stroke-linecap="round" stroke-dasharray="125" stroke-dashoffset="@GetDashOffset()" filter="url(#glow)"></path>
+                    </svg>
+                    <!-- Score Context -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-end pb-8">
+                        <span class="text-5xl font-headline font-black text-white">@(analysisResult?.RiskScore.ToString("0.0") ?? "-")</span>
+                        <span class="text-xs font-bold @GetRiskColor() px-3 py-1 rounded-full @GetRiskBgColor() mt-2">@GetRiskStatus()</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-center text-on-surface-variant mt-4 max-w-[200px]">
+                    100 üzerinden hesaplanmıştır. 0-20 arası değerler optimal sağlığı gösterir.
+                </p>
+            </div>
+        </div>
+
+        <!-- Middle Column: Metrics & Predictions -->
+        <div class="xl:col-span-2 space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Productivity Prediction -->
+                <div class="glass-card p-6 rounded-3xl border-l-4 border-l-primary flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-bold text-white">Üretkenlik Tahmini</h4>
+                            <span class="material-symbols-outlined text-primary">insights</span>
+                        </div>
+                        <p class="text-xs text-on-surface-variant">@(analysisResult?.ProductivityPrediction ?? "Veri bulunamadı.")</p>
+                    </div>
+                    <div class="mt-6">
+                        <div class="flex items-end gap-2 text-white">
+                            <span class="text-4xl font-headline font-bold">@((animal?.Gender == "D" && analysisResult != null) ? "28.4" : "-")</span>
+                            <span class="text-sm text-on-surface-variant mb-1">Litre/Gün</span>
+                        </div>
+                        <div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-3">
+                            <div class="bg-primary h-1.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 text-[10px] font-bold text-on-surface-variant">
+                            <span>Mevcut: 27.1 L</span>
+                            <span class="text-primary">+4.8% Vektor</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Anomaly Detection -->
+                <div class="glass-card p-6 rounded-3xl border-l-4 border-l-tertiary flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-bold text-white">Anomali Tespiti</h4>
+                            <span class="material-symbols-outlined text-tertiary">troubleshoot</span>
+                        </div>
+                        <p class="text-xs text-on-surface-variant">@(analysisResult?.HealthStatusDescription ?? "Sensörlerden alınan verilerde sapma paterni analizi.")</p>
+                    </div>
+                    <div class="mt-6 flex flex-col gap-3">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border border-outline-variant/10">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                                <span class="text-xs font-semibold text-white">Adım Aktivitesi</span>
+                            </div>
+                            <span class="text-xs text-tertiary font-bold">Normal</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border border-outline-variant/10">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2 h-2 rounded-full bg-primary"></span>
+                                <span class="text-xs font-semibold text-white">Ruminasyon Süresi</span>
+                            </div>
+                            <span class="text-xs text-primary font-bold">Optimal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deep Recommendation System -->
+            <div class="glass-card p-8 rounded-3xl flex-1">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-xl font-headline font-bold text-white">AI Müdahale Modeli</h3>
+                        <p class="text-sm text-on-surface-variant mt-1">Önerilen aksiyonlar ve optimizasyon vektörleri.</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary animate-pulse">memory</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Recommendation 1 -->
+                    <div class="group flex gap-4 p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer">
+                        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined">restaurant</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold text-sm mb-1 group-hover:text-primary transition-colors">AI Analiz Aksiyon Önerisi</h4>
+                            <p class="text-xs text-on-surface-variant leading-relaxed">
+                                @(analysisResult?.ActionRequired ?? "Bir öneri bulunmamaktadır. Rutin kontrollerinize devam edebilirsiniz.")
+                            </p>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="px-2 py-1 rounded bg-surface-container text-[9px] font-bold text-white uppercase tracking-wider">Etki: @(analysisResult?.RiskScore > 5 ? "Kritik" : "Normal")</span>
+                                <span class="px-2 py-1 rounded bg-surface-container text-[9px] font-bold text-white uppercase tracking-wider">Güven:%94</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation 2 -->
+                    <div class="group flex gap-4 p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 hover:border-tertiary/30 transition-all cursor-pointer">
+                        <div class="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center flex-shrink-0 text-tertiary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined">medical_services</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold text-sm mb-1 group-hover:text-tertiary transition-colors">Rutin Tırnak Bakımı</h4>
+                            <p class="text-xs text-on-surface-variant leading-relaxed">
+                                Aktivite sensörü verilerine göre sol arka ayakta hafif basış asimetrisi var. Planlı tırnak kesimi öne çekilmelidir.
+                            </p>
+                            <div class="flex gap-2 mt-3">
+                                <span class="px-2 py-1 rounded bg-surface-container text-[9px] font-bold text-white uppercase tracking-wider">Etki: Orta</span>
+                                <span class="px-2 py-1 rounded bg-surface-container text-[9px] font-bold text-white uppercase tracking-wider">Tarih Önerisi: 3 Gün İçinde</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    [Inject] public IAnimalService AnimalService { get; set; } = default!;
+
+    private AnimalDto? animal;
+    private AIAnalysisResultDto? analysisResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            animal = await AnimalService.GetAnimalByIdAsync(Id.Value);
+            analysisResult = await AnimalService.AnalyzeAnimalAsync(Id.Value);
+        }
+    }
+// ... rest of the code remains same but uses animal.Gender and animal.BirthDate
+
+    private string GetRiskColor()
+    {
+        if (analysisResult == null) return "text-primary";
+        if (analysisResult.RiskScore < 4) return "text-primary";
+        if (analysisResult.RiskScore < 7) return "text-tertiary";
+        return "text-error";
+    }
+
+    private string GetRiskBgColor()
+    {
+        if (analysisResult == null) return "bg-primary/10";
+        if (analysisResult.RiskScore < 4) return "bg-primary/10";
+        if (analysisResult.RiskScore < 7) return "bg-tertiary/10";
+        return "bg-error/10";
+    }
+
+    private string GetRiskStatus()
+    {
+        if (analysisResult == null) return "Bilinmiyor";
+        if (analysisResult.RiskScore < 4) return "Risksiz";
+        if (analysisResult.RiskScore < 7) return "Orta Riskli";
+        return "Yüksek Riskli";
+    }
+
+    // Calculating dash offset (dasharray is 125, so offset 125 = 0%, offset 0 = 100%)
+    private string GetDashOffset()
+    {
+        if (analysisResult == null) return "125";
+        var perc = analysisResult.RiskScore / 10.0m;
+        var offset = 125 - (125 * perc);
+        return offset.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+    }
+}

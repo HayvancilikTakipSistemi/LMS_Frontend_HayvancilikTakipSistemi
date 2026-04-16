@@ -1,0 +1,41 @@
+@inherits LayoutComponentBase
+
+<div class="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-surface">
+    <!-- Background Elements -->
+    <div class="absolute inset-0 z-0">
+        <!-- Dynamic Abstract Shapes -->
+        <div class="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[120px]"></div>
+        <div class="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-secondary-container/20 blur-[100px]"></div>
+        <div class="absolute inset-0 bg-grain"></div>
+        <div class="fixed top-0 right-0 w-1/3 h-full z-[-1] opacity-20 pointer-events-none grayscale mix-blend-overlay">
+            <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeXIKsozk3ScEvmUBuJc3KIgynmpOCV5SMtUMevq5C47azlxJR2K2g7JeHgwYe2vMXDLwqsasuFJ10SgJQUokgb88L__NzNdbcUdwbA53odQDoWUAIg9PheoPQG1ZW-18WbT2NJou8Vg8zmZBS_fLOdNHLHnC07gIYkvdQROoWOTZUQQg_OSn3Gg6kQnysfT_TA7g4uhskFQVgFz6qh_ZN1-MTnjjaNDuIq92E7ZvCG_xwX3uyGQyKWI8kdGfet_Cdo-mJ3gFkpBY" />
+        </div>
+    </div>
+
+    <!-- Top Navigation Shell -->
+    <header class="fixed top-0 w-full flex justify-between items-center px-8 py-6 z-50 bg-transparent backdrop-blur-xl">
+        <div class="text-2xl font-['Outfit'] font-bold text-white tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">eco</span>
+            Livestock Elite
+        </div>
+        <div class="flex gap-6 items-center">
+            <span class="font-headline uppercase tracking-widest text-xs text-white/60">HAYVANCILIK ZEKI</span>
+            <span class="material-symbols-outlined text-white/60 hover:text-primary transition-colors cursor-pointer">language</span>
+        </div>
+    </header>
+
+    @Body
+
+    <!-- Footer Shell -->
+    <footer class="fixed bottom-0 w-full flex justify-between items-center px-8 py-8 z-40 bg-transparent">
+        <div class="font-body text-sm tracking-normal text-white/40 flex items-center gap-4">
+            <span>&copy; @DateTime.Now.Year Livestock Elite Sistemleri</span>
+            <span class="h-4 w-px bg-white/10"></span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Sistem Durumu: Normal</span>
+        </div>
+        <div class="flex gap-6 hidden sm:flex">
+            <a href="#" class="text-white/40 hover:text-white transition-colors text-sm">Gizlilik Politikası</a>
+            <a href="#" class="text-white/40 hover:text-white transition-colors text-sm">Kullanım Koşulları</a>
+        </div>
+    </footer>
+</div>

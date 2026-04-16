@@ -1,0 +1,620 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║         HAYVANCILIK TAKİP SİSTEMİ (LMS) — TAM TEST REHBERİ                ║
+║         Sprint 1 · Sprint 2 · Sprint 3                                      ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Bu dosyayı oku, sırayla uygula. Her test için beklenen çıktı yazıldı.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAŞLAMADAN ÖNCE — ORTAM HAZIRLIĞI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─ KONTROL LİSTESİ ─────────────────────────────────────────────────────────┐
+│  [ ] SQL Server Express çalışıyor mu? (Görev Yöneticisi → Hizmetler)      │
+│  [ ] .NET 8 SDK kurulu mu?  →  dotnet --version  (8.x.x çıkmalı)         │
+│  [ ] VS Code açık mı?                                                      │
+└────────────────────────────────────────────────────────────────────────────┘
+
+NEREDE ÇALIŞTIRACAKSIN?
+  ► Powershell / Terminal'i şu klasörde aç:
+    c:\Users\Ram Computer\.gemini\antigravity\scratch\LMS_Frontend_HayvancilikTakipSistemi-master
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ██████  SPRINT 1 — TEMEL ALTYAPI TESTLERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+▌ TEST S1-1: Proje Derleniyor mu?
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Powershell / Terminal
+NE YAZIRSUN   → dotnet build LMS.sln
+
+NE İŞE YARAR  → Tüm projenin (Server + Client + Shared) hatasız derlenip
+                derlenmediğini kontrol eder. Kod yazım hatası varsa burada çıkar.
+
+BEKLENEN ÇIKTI:
+  Build succeeded.
+  0 Error(s)
+  0 Warning(s) ← uyarı olabilir, sorun değil
+
+HATA ÇIKTI İSE:
+  → Hata mesajındaki dosya adı + satır numarasına git, orada syntax hatası var.
+
+
+▌ TEST S1-2: Veritabanı Migration & Seed Data
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Powershell / Terminal
+NE YAZIRSUN   → (sırayla)
+
+  cd LMS.Server
+
+  dotnet ef database update
+
+NE İŞE YARAR  → AppDbContext.cs içindeki tüm DbSet'leri SQL Server'a tablo olarak
+                oluşturur. AnimalStatus, AnimalType, Breed için seed data ekler.
+                Migration dosyaları Migrations/ klasöründe zaten var.
+
+BEKLENEN ÇIKTI:
+  Applying migration '20260413..._InitialCreate'.
+  Done.
+
+Sonra SQL Server Management Studio'da (SSMS) aç:
+  Server: .\SQLEXPRESS
+  Database: LMS_DB  ← bu oluşmuş olmalı
+
+Şu tabloların geldiğini kontrol et:
+  ✔ Animals
+  ✔ Farmers
+  ✔ Breeds
+  ✔ AnimalStatuses   → 6 kayıt gelmiş olmalı (Aktif, Hasta, Gebe, Satıldı, Öldü, Karantina)
+  ✔ AnimalTypes      → 4 kayıt (Sığır, Koyun, Keçi, Manda)
+  ✔ Barns
+  ✔ Veterinarians
+  ✔ Drugs
+  ✔ Examinations
+  ✔ Vaccines
+  ✔ VaccinationRecords
+  ✔ Feeds, FeedTypes, FeedRecords
+
+
+▌ TEST S1-3: Sunucuyu Başlat
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Powershell / Terminal (LMS.Server klasöründe)
+NE YAZIRSUN   → dotnet run
+
+NE İŞE YARAR  → API sunucusunu başlatır. Bu terminal açık kaldığı sürece API çalışır.
+                KAPATMA — diğer testleri bu terminal çalışırken yap.
+
+BEKLENEN ÇIKTI:
+  info: Microsoft.Hosting.Lifetime[14]
+        Now listening on: http://localhost:5171
+        Now listening on: https://localhost:7171
+
+NOT: Port numarasını not al, aşağıda kullanacaksın.
+
+
+▌ TEST S1-4: Swagger Arayüzü
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Tarayıcı (Chrome/Edge)
+NE YAZIRSUN   → https://localhost:7171/swagger
+
+NE İŞE YARAR  → Tüm API endpointlerini listeler. Buradan görsel olarak test edebilirsin.
+
+BEKLENEN ÇIKTI:
+  Swagger UI açılır. Sol menüde şu controllerlar görünmeli:
+  ✔ Auth         (register, login, refresh, logout)
+  ✔ Animal       (GET, POST, PUT, DELETE)
+  ✔ Farmer       (CRUD)
+  ✔ Breed        (CRUD)
+  ✔ Barn         (CRUD)
+  ✔ Veterinarian (CRUD)
+  ✔ Drug         (CRUD)
+  ✔ Examination  (CRUD)
+  ✔ Vaccine      (CRUD)
+  ✔ VaccinationRecord (CRUD)
+  ✔ Feed         (CRUD)
+  ✔ FeedRecord   (CRUD)
+
+
+▌ TEST S1-5: Kullanıcı Kaydı (Register)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → VS Code'da LMS.Server/LMS.Server.http dosyasını aç
+                YA DA Swagger'da Auth → POST /api/Auth/register
+
+NE YAZIRSUN   → (HTTP dosyasındaki Login bloğundan önce bunu çalıştır)
+                POST https://localhost:7171/api/Auth/register
+                Content-Type: application/json
+
+                {
+                  "email": "test@lms.com",
+                  "password": "Test123!",
+                  "firstName": "Ali",
+                  "lastName": "Veli",
+                  "phoneNumber": "05001112233",
+                  "address": "Ankara"
+                }
+
+NE İŞE YARAR  → Yeni bir çiftçi (Farmer) kaydı + kullanıcı hesabı oluşturur.
+                Farmers tablosuna ve AspNetUsers tablosuna kayıt girer.
+
+BEKLENEN ÇIKTI:
+  HTTP 200 OK
+  {
+    "message": "Registration successful",
+    "farmerId": 1
+  }
+
+
+▌ TEST S1-6: Giriş Yap — JWT Token Al
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → VS Code'da LMS.Server/LMS.Server.http dosyasını aç
+NE YAZIRSUN   → ### [AUTH] Kullanıcı Girişi bloğunu çalıştır:
+
+                POST https://localhost:7171/api/Auth/login
+                Content-Type: application/json
+
+                {
+                  "email": "test@lms.com",
+                  "password": "Test123!"
+                }
+
+NE İŞE YARAR  → Email/şifreyi doğrular, JWT token üretir. Bu token'ı diğer
+                tüm [Authorize] endpoint'lerde Header'a eklemen gerekiyor.
+
+BEKLENEN ÇIKTI:
+  HTTP 200 OK
+  {
+    "token": "eyJhbGciOiJIUzI1NiIsInR...",   ← BUNU KOPYALA
+    "userID": "abc-123-...",
+    "email": "test@lms.com",
+    "fullName": "Ali Veli",
+    "farmerId": 1,
+    "role": "Farmer"
+  }
+
+  → "token" değerini kopyala
+  → LMS.Server.http dosyasında @token = BURAYA_TOKEN_YAPISTIR satırına yapıştır
+
+
+▌ TEST S1-7: Hayvan CRUD (AnimalController)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → VS Code'da LMS.Server/LMS.Server.http dosyasına ekle
+                YA DA Swagger'da Animal bölümünü kullan (önce Authorize et)
+
+Swagger'da Authorize:
+  Sağ üstteki "Authorize" butonuna tıkla →
+  Value kutusuna: Bearer eyJhbGci...  (önüne "Bearer " yaz)
+  → "Authorize" → "Close"
+
+YENİ HAYVAN EKLE (POST):
+  POST https://localhost:7171/api/Animal
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "animalID": 0,
+    "kupeNo": "TR-001",
+    "gender": "E",
+    "birthDate": "2023-05-15T00:00:00",
+    "breedID": 1,
+    "barnID": null,
+    "animalStatusID": 1,
+    "farmerID": 1,
+    "motherAnimalID": null
+  }
+
+BEKLENEN ÇIKTI:
+  HTTP 201 Created
+  {
+    "animalID": 1,
+    "tagNumber": "TR-001",
+    "name": "Papatyam",
+    ...
+  }
+
+HAYVAN LİSTESİ (GET):
+  GET https://localhost:7171/api/Animal
+  Authorization: Bearer {token}
+
+BEKLENEN ÇIKTI:
+  HTTP 200 OK
+  [ { "animalID": 1, "kupeNo": "TR-001", "gender": "E", ... } ]
+
+
+▌ TEST S1-8: Blazor Client Çalışıyor mu?
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → YENİ bir Powershell penceresi aç (önceki kapanmasın!)
+NE YAZIRSUN   →
+  cd "c:\Users\Ram Computer\.gemini\antigravity\scratch\LMS_Frontend_HayvancilikTakipSistemi-master\LMS.Client"
+  dotnet run
+
+NE İŞE YARAR  → Blazor WebAssembly istemciyi başlatır. Login sayfası açılır.
+
+BEKLENEN ÇIKTI:
+  Now listening on: http://localhost:5000
+
+Tarayıcıda: http://localhost:5000
+  → Login formu görünmeli (email + şifre alanları)
+  → test@lms.com / Test123! ile giriş yap
+  → Dashboard'a yönlenmeli
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ██████  SPRINT 2 — SAĞLIK MODÜLÜ TESTLERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NOT: Önce sprint 1 testleri tamam olmalı. Sunucu çalışıyor olmalı.
+     Token almış olmalısın (S1-6'daki adım).
+
+
+▌ TEST S2-1: Veteriner Oluştur
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → Veterinarian → POST /api/Veterinarian
+                YA DA LMS.Server.http → [VET] Yeni Veteriner Oluştur bloğu
+
+NE YAZIRSUN   →
+  POST https://localhost:7171/api/Veterinarian
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "veterinarianID": 0,
+    "firstName": "Mehmet",
+    "lastName": "Doktor",
+    "phone": "05321234567",
+    "specialization": "Büyük Hayvanlar",
+    "address": "Ankara",
+    "email": "mehmet@vet.com",
+    "registrationDate": "2026-01-01T00:00:00"
+  }
+
+NE İŞE YARAR  → Veterinarians tablosuna yeni kayıt ekler.
+
+BEKLENEN ÇIKTI:
+  HTTP 201 Created
+  {
+    "veterinarianID": 1,
+    "firstName": "Mehmet",
+    ...
+  }
+
+
+▌ TEST S2-2: İlaç Ekle (DrugController)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → Drug → POST /api/Drug
+NE YAZIRSUN   →
+  POST https://localhost:7171/api/Drug
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "drugID": 0,
+    "drugName": "Penisilin",
+    "description": "Antibiyotik",
+    "unit": "ml",
+    "price": 45.50
+  }
+
+BEKLENEN ÇIKTI:
+  HTTP 201 Created
+  { "drugID": 1, "drugName": "Penisilin", ... }
+
+
+▌ TEST S2-3: Muayene Kaydı + İlaç Birlikte (ExaminationController)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → Examination → POST /api/Examination
+NE YAZIRSUN   →
+  POST https://localhost:7171/api/Examination
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "examinationID": 0,
+    "animalID": 1,
+    "veterinarianID": 1,
+    "examinationDate": "2026-04-16T10:00:00",
+    "diagnosis": "Solunum yolu enfeksiyonu",
+    "treatment": "Antibiyotik tedavisi",
+    "notes": "3 gün sonra kontrol",
+    "drugs": [
+      {
+        "drugID": 1,
+        "dosage": "10ml",
+        "frequency": "2x1",
+        "duration": "5 gün"
+      }
+    ]
+  }
+
+NE İŞE YARAR  → Examinations tablosuna muayene kaydı + ExaminationDrugs
+                tablosuna ilaç-muayene ilişkisi aynı anda eklenir.
+                (Composite PK: ExaminationID + DrugID)
+
+BEKLENEN ÇIKTI:
+  HTTP 201 Created
+  { "examinationID": 1, "animalID": 1, "drugs": [...], ... }
+
+
+▌ TEST S2-4: Aşı Türü Ekle (VaccineController)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → Vaccine → POST /api/Vaccine
+NE YAZIRSUN   →
+  POST https://localhost:7171/api/Vaccine
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "vaccineID": 0,
+    "vaccineName": "Şap Aşısı",
+    "description": "Yılda 2 kez uygulanır",
+    "intervalDays": 180
+  }
+
+BEKLENEN ÇIKTI:
+  HTTP 201 Created
+  { "vaccineID": 1, "vaccineName": "Şap Aşısı", ... }
+
+
+▌ TEST S2-5: Aşı Kaydı Ekle (VaccinationRecordController)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → VaccinationRecord → POST /api/VaccinationRecord
+                YA DA LMS.Server.http → [AŞI] Yeni Aşı Kaydı bloğu
+NE YAZIRSUN   →
+  POST https://localhost:7171/api/VaccinationRecord
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "vaccinationRecordID": 0,
+    "animalID": 1,
+    "veterinarianID": 1,
+    "vaccineID": 1,
+    "applicationDate": "2026-04-16T00:00:00",
+    "nextDate": "2026-10-16T00:00:00",
+    "notes": "İlk şap aşısı yapıldı"
+  }
+
+BEKLENEN ÇIKTI:
+  HTTP 201 Created
+  { "vaccinationRecordID": 1, "animalID": 1, "nextDate": "2026-10-16...", ... }
+
+
+▌ TEST S2-6: Hayvan Sağlık Geçmişi Listesi
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → Examination → GET /api/Examination
+NE YAZIRSUN   →
+  GET https://localhost:7171/api/Examination
+  Authorization: Bearer {token}
+
+NE İŞE YARAR  → Tüm muayene kayıtlarını döner. sp_HayvanSaglikGecmisi stored
+                procedure'ünün yaptığı işe benzer şekilde tüm muayeneleri listeler.
+
+BEKLENED ÇIKTI:
+  HTTP 200 OK
+  [
+    {
+      "examinationID": 1,
+      "animalID": 1,
+      "veterinarianID": 1,
+      "diagnosis": "Solunum yolu enfeksiyonu",
+      "drugs": [...]
+    }
+  ]
+
+
+▌ TEST S2-7: Yaklaşan Aşılar
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → VaccinationRecord → GET /api/VaccinationRecord
+NE YAZIRSUN   →
+  GET https://localhost:7171/api/VaccinationRecord
+  Authorization: Bearer {token}
+
+NE İŞE YARAR  → Tüm aşı kayıtlarını döner. NextDate alanına bakarak
+                30 gün içinde gelecek aşıları görebilirsin.
+
+BEKLENEN ÇIKTI:
+  HTTP 200 OK
+  [ { "vaccinationRecordID": 1, "nextDate": "2026-10-16...", "notes": "...", ... } ]
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ██████  SPRINT 3 — ÜRETİM MODÜLÜ TESTLERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NOT: Aşağıdaki testler için MilkRecord ve MilkController henüz yoksa
+     sadece Feed/FeedRecord testlerini çalıştır.
+
+
+▌ TEST S3-1: Yem Türü Ekle (FeedType)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → Feed → POST /api/Feed
+                (FeedType ayrı endpoint yoksa Feed controller üzerinden)
+NE YAZIRSUN   →
+  POST https://localhost:7171/api/Feed
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "feedID": 0,
+    "feedName": "Arpa",
+    "feedTypeID": 1,
+    "stockQuantity": 500.0,
+    "unit": "kg"
+  }
+
+NE İŞE YARAR  → Feeds tablosuna yem stok kaydı ekler. StockQuantity yem
+                verildiğinde otomatik olarak düşmelidir (FeedService kontrolü).
+
+BEKLENEN ÇIKTI:
+  HTTP 201 Created
+  { "feedID": 1, "feedName": "Arpa", "stockQuantity": 500.0, ... }
+
+
+▌ TEST S3-2: Yem Verme Kaydı (FeedRecordController)
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → FeedRecord → POST /api/FeedRecord
+NE YAZIRSUN   →
+  POST https://localhost:7171/api/FeedRecord
+  Authorization: Bearer {token}
+  Content-Type: application/json
+
+  {
+    "feedRecordID": 0,
+    "animalID": 1,
+    "feedID": 1,
+    "quantityKg": 5.0,
+    "recordDate": "2026-04-16T08:00:00"
+  }
+
+NE İŞE YARAR  → FeedRecords tablosuna kayıt ekler. Aynı zamanda FeedService
+                içindeki iş kuralı devreye girer: Feed.StockQuantity 5 azalır.
+                Stok 0'ın altına düşemez — düşerse hata verir.
+
+BEKLENEN ÇIKTI (stok yeterliyse):
+  HTTP 201 Created
+  { "feedRecordID": 1, "animalID": 1, "feedID": 1, "amount": 5.0, ... }
+
+BEKLENEN ÇIKTI (stok 0 ise):
+  HTTP 400 Bad Request
+  { "message": "Stok yetersiz" }   ← ya da benzeri hata mesajı
+
+
+▌ TEST S3-3: Yem Stok Kontrolü
+──────────────────────────────────────────────────────────────────────────────
+NEREYE YAZ    → Swagger → Feed → GET /api/Feed/1
+NE YAZIRSUN   →
+  GET https://localhost:7171/api/Feed/1
+  Authorization: Bearer {token}
+
+NE İŞE YARAR  → Yem kaydını getirir. StockQuantity'nin düştüğünü doğrular.
+
+BEKLENEN ÇIKTI:
+  HTTP 200 OK
+  { "feedID": 1, "feedName": "Arpa", "stockQuantity": 495.0, ... }
+                                                     ↑
+                                          500 - 5 = 495 olmalı!
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ██████  BLAZOR ARAYÜZ TESTLERİ (Tüm Sprint'ler)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sunucu (LMS.Server) çalışırken client'ı da başlat:
+  Yeni terminal:
+  cd LMS.Client
+  dotnet run
+
+Tarayıcıda: http://localhost:5000
+
+
+▌ TEST UI-1: Login.razor
+──────────────────────────────────────────────────────────────────────────────
+SAYFA    → http://localhost:5000/login
+NE YAPAR → Kullanıcı giriş yapar, JWT token localStorage'a kaydedilir.
+
+YAPILACAK:
+  1. Email: test@lms.com
+  2. Şifre: Test123!
+  3. "Giriş Yap" butonuna tıkla
+
+BEKLENEN:
+  ✔ Dashboard'a yönlendirilirsin
+  ✔ Tarayıcı → F12 → Application → Local Storage → token anahtarı görünmeli
+
+HATA ÇIKTI İSE:
+  ✔ 401: Şifre yanlış ya da kullanıcı yok → önce register yap (S1-5)
+  ✔ Network hatası: Sunucu çalışmıyor → dotnet run çalıştır
+
+
+▌ TEST UI-2: Dashboard.razor
+──────────────────────────────────────────────────────────────────────────────
+SAYFA    → http://localhost:5000/dashboard
+NE YAPAR → API'den toplam hayvan sayısı, hasta sayısı, yaklaşan aşı
+           bilgilerini çeker ve kartlar halinde gösterir.
+
+BEKLENEN:
+  ✔ "Toplam Hayvan" kartı → API'deki kayıt sayısıyla uyuşmalı
+  ✔ "Hasta Hayvan" → AnimalStatus = "Hasta" olanların sayısı
+  ✔ "Yaklaşan Aşı" → VaccinationRecord'dan NextDate 30 gün içindekilerin sayısı
+
+HATA ÇIKTI İSE:
+  ✔ "Yükleniyor..." takıldı: API bağlantısı yok, sunucuyu başlat
+  ✔ 0 görünüyor: Önce S1-7 ve S2-5 testlerini yap, veri ekle
+
+
+▌ TEST UI-3: Animals.razor (Hayvan Listesi)
+──────────────────────────────────────────────────────────────────────────────
+SAYFA    → http://localhost:5000/animals
+NE YAPAR → API'den hayvan listesini çeker, tabloda gösterir, ara/filtrele.
+
+BEKLENEN:
+  ✔ S1-7'de eklediğin "Papatyam" hayvani listede görünmeli
+  ✔ Arama kutusuna "Papaty" yazınca filtreleymeli
+  ✔ Satıra tıklayınca detay sayfasına gitmeli
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  GENEL HATA REFERANSI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HTTP KODU   ANLAMDIR                   ÇÖZÜM
+─────────────────────────────────────────────────────────────────────────────
+200         Başarılı GET               ✔ Sorun yok
+201         Kayıt oluşturuldu          ✔ Sorun yok
+204         Güncellendi / Silindi      ✔ Sorun yok
+400         Hatalı istek               → Request body'i kontrol et, ID eşleşmeli
+401         Yetkisiz                   → Token yok/süresi dolmuş → tekrar login
+403         Yasaklı                    → Rol yetkisi yok
+404         Kayıt bulunamadı           → Yanlış ID, önce kayıt oluştur
+500         Sunucu hatası              → Terminal'deki hata mesajını oku
+
+BAĞLANTI HATASI   → dotnet run ile sunucu başlatıldı mı?
+"CORS hatası"     → Program.cs'teki BlazorCors politikası aktif mi?
+"Token invalid"   → Token kopyalarken başında/sonunda boşluk bırakma
+"DB hatası"       → SQL Server çalışıyor, dotnet ef database update yapıldı mı?
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TEST SIRASI ÖZET (Hızlı Referans)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.  dotnet build LMS.sln                → Derleme kontrolü
+2.  cd LMS.Server && dotnet ef database update → Veritabanı oluştur
+3.  dotnet run (LMS.Server)             → Sunucuyu çalıştır
+4.  https://localhost:7171/swagger      → Swagger aç
+5.  POST /api/Auth/register             → Kullanıcı kaydı
+6.  POST /api/Auth/login → token kopyala
+7.  POST /api/Animal                    → Hayvan ekle (token ile)
+8.  POST /api/Veterinarian              → Veteriner ekle
+9.  POST /api/Drug                      → İlaç ekle
+10. POST /api/Examination               → Muayene + ilaç
+11. POST /api/Vaccine                   → Aşı türü ekle
+12. POST /api/VaccinationRecord         → Aşı kaydı ekle
+13. POST /api/Feed                      → Yem stok ekle
+14. POST /api/FeedRecord                → Yem verme kaydı → stok düşmeli
+15. dotnet run (LMS.Client)             → Blazor başlat
+16. http://localhost:5000/login         → Arayüzden giriş
+17. http://localhost:5000/dashboard     → Dashboard kartları gözle
+18. http://localhost:5000/animals       → Hayvan listesi gözle
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DOSYA KONUMLARI REFERANSI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GÖREV                          DOSYA KONUMU
+─────────────────────────────────────────────────────────────────────────────
+DB bağlantı ayarı              LMS.Server/appsettings.json
+Migration                      LMS.Server/Migrations/
+Tablo tanımları (entity)       LMS.Shared/Entities/
+API endpoint'leri (controller) LMS.Server/Controllers/
+Veri şekilleri (DTO)           LMS.Shared/DTOs/
+Token servisi                  LMS.Server/Services/TokenService.cs
+Veritabanı context             LMS.Server/Data/AppDbContext.cs
+Blazor sayfaları               LMS.Client/Pages/
+Blazor servisler               LMS.Client/Services/
+HTTP test dosyası              LMS.Server/LMS.Server.http
+Bu test rehberi                TEST_REHBERI.txt  (kökte)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

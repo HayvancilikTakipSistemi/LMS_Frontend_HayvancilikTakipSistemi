@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Livestock Elite LMS</title>
+    <base href="/" />
+    
+    <!-- Google Fonts & Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS (via CDN for local dev) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#1fc46a",
+                        "on-secondary": "#41564d",
+                        "error-container": "#9f0519",
+                        "on-primary-fixed-variant": "#006a35",
+                        "surface-tint": "#6bfe9c",
+                        "on-secondary-container": "#bed6ca",
+                        "on-tertiary-container": "#004554",
+                        "surface-variant": "#262626",
+                        "secondary-fixed": "#d0e8dc",
+                        "inverse-on-surface": "#565555",
+                        "surface-container-lowest": "#000000",
+                        "on-surface-variant": "#adaaaa",
+                        "tertiary-dim": "#00c6ed",
+                        "tertiary-fixed-dim": "#00c6ed",
+                        "primary-fixed": "#6bfe9c",
+                        "on-primary-container": "#003417",
+                        "surface": "#0e0e0e",
+                        "secondary-dim": "#c3dace",
+                        "on-primary": "#005f2f",
+                        "secondary": "#d0e8dc",
+                        "error": "#ff716c",
+                        "primary-fixed-dim": "#5bef90",
+                        "on-tertiary": "#004e5f",
+                        "on-secondary-fixed": "#2f443b",
+                        "tertiary-fixed": "#00d5ff",
+                        "secondary-container": "#374b42",
+                        "surface-container": "#1a1a1a",
+                        "secondary-fixed-dim": "#c3dace",
+                        "primary-dim": "#5bef90",
+                        "on-background": "#ffffff",
+                        "background": "#0e0e0e",
+                        "primary": "#6bfe9c",
+                        "on-error-container": "#ffa8a3",
+                        "outline": "#767575",
+                        "on-surface": "#ffffff",
+                        "tertiary-container": "#00d5ff",
+                        "on-tertiary-fixed": "#002f3a",
+                        "on-error": "#490006",
+                        "on-tertiary-fixed-variant": "#004e5f",
+                        "on-secondary-fixed-variant": "#4b6056",
+                        "surface-container-highest": "#262626",
+                        "on-primary-fixed": "#004a23",
+                        "surface-dim": "#0e0e0e",
+                        "inverse-surface": "#fcf9f8",
+                        "error-dim": "#d7383b",
+                        "tertiary": "#76dfff",
+                        "surface-container-low": "#131313",
+                        "surface-bright": "#2c2c2c",
+                        "inverse-primary": "#006e37",
+                        "surface-container-high": "#20201f",
+                        "outline-variant": "#484847"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="LMS.Client.styles.css" rel="stylesheet" />
+</head>
+
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary overflow-x-hidden antialiased">
+    <div id="app">
+        <svg class="loading-progress" style="display:block; margin: 20vh auto;">
+            <circle r="40%" cx="50%" cy="50%" fill="none" stroke="#6bfe9c" stroke-width="4" />
+        </svg>
+    </div>
+
+    <div id="blazor-error-ui" class="hidden fixed bottom-5 right-5 bg-error-container text-on-error-container p-4 rounded-xl shadow-lg z-50">
+        An unhandled error has occurred.
+        <a href="" class="reload font-bold underline ml-2">Reload</a>
+        <a class="dismiss cursor-pointer ml-4 font-bold">🗙</a>
+    </div>
+    
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>
