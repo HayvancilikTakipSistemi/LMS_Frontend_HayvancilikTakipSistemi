@@ -618,3 +618,137 @@ HTTP test dosyası              LMS.Server/LMS.Server.http
 Bu test rehberi                TEST_REHBERI.txt  (kökte)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ██████  GIT KOMUTLARI — GITHUB'A KAYDETME REHBERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  ÖNEMLİ: Git komutlarını yazmadan önce MUTLAKA doğru klasörde olmalısın!
+
+▌ ADIM 0 — Her seferinde önce bunu yaz (klasöre git)
+──────────────────────────────────────────────────────────────────────────────
+  cd "c:\Users\Ram Computer\.gemini\antigravity\scratch\LMS_Frontend_HayvancilikTakipSistemi-master"
+
+  VEYA daha kolay: VS Code → Terminal → New Terminal
+  (otomatik doğru klasörde açılır, cd yazmana gerek kalmaz)
+
+
+▌ GÜNLÜK KULLANIM — Kod değiştirdikten sonra GitHub'a kaydet
+──────────────────────────────────────────────────────────────────────────────
+
+KOMUT 1 — Neyin değiştiğini gör:
+  git status
+
+  NE YAPAR  → Değişen, eklenen, silinen dosyaları listeler.
+  ÇIKTI     → "modified: LMS.Server/Program.cs" gibi satırlar
+
+──────────────────────────────────────────────────────────────────────────────
+
+KOMUT 2 — Değişiklikleri hazırla (stage'e al):
+  git add .
+
+  NE YAPAR  → Tüm değişen dosyaları commit'e hazırlar.
+              Sadece belirli bir dosyayı eklemek istersen:
+              git add LMS.Server/Program.cs
+
+──────────────────────────────────────────────────────────────────────────────
+
+KOMUT 3 — Değişiklikleri kaydet (commit):
+  git commit -m "ne yaptığını buraya yaz"
+
+  ÖRNEKLER:
+    git commit -m "VeterinarianController guncellendi"
+    git commit -m "Login sayfasi tasarimi duzeltildi"
+    git commit -m "Sprint 2 tamamlandi"
+
+  NE YAPAR  → Değişiklikleri LOCAL olarak kaydeder.
+              Henüz GitHub'a gitmez, sadece bilgisayarında.
+
+──────────────────────────────────────────────────────────────────────────────
+
+KOMUT 4 — GitHub'a gönder (push):
+  git push
+
+  NE YAPAR  → Commit'leri GitHub remote reposuna yükler.
+              Bu adımdan sonra ekip arkadaşların görebilir.
+
+  BEKLENEN ÇIKTI:
+    To https://github.com/HayvancilikTakipSistemi/LMS_Frontend_...
+       ae861fa..xyz1234  main -> main
+
+──────────────────────────────────────────────────────────────────────────────
+
+HEPSİNİ BİRDEN (3 komut sırayla):
+  git add .
+  git commit -m "değişiklik açıklaması"
+  git push
+
+
+▌ ARKADAŞIN YENİ KOD YÜKLEDI — Bilgisayarına çek
+──────────────────────────────────────────────────────────────────────────────
+
+  git pull
+
+  NE YAPAR  → GitHub'daki yeni kodları bilgisayarına indirir.
+              Her oturuma başlarken bunu çalıştır.
+
+  BEKLENEN ÇIKTI (yeni şeyler varsa):
+    Updating ae861fa..xyz1234
+    Fast-forward
+     LMS.Server/Program.cs | 5 ++---
+
+  BEKLENEN ÇIKTI (zaten güncel ise):
+    Already up to date.
+
+
+▌ DURUM KONTROL KOMUTLARI
+──────────────────────────────────────────────────────────────────────────────
+
+git status
+  → Şu an neyin değiştiğini gösterir
+  → "nothing to commit, working tree clean" = her şey kaydedilmiş ✔
+
+git log --oneline
+  → Geçmiş commit'leri kısa listeler
+  → Örnek çıktı:
+      ae861fa fix: Program.cs duzeltildi
+      9c4b123 Sprint 2 tamamlandi
+      7a2d456 İlk commit
+
+git diff
+  → Son commit'ten bu yana tam olarak neler değişti gösterir
+
+
+▌ HATA REFERANSI
+──────────────────────────────────────────────────────────────────────────────
+
+HATA                                    ÇÖZÜM
+─────────────────────────────────────────────────────────────────────────────
+fatal: not a git repository             → cd ile proje klasörüne git (Adım 0)
+error: failed to push — rejected        → önce git pull yap, sonra tekrar push
+Please tell me who you are              → git config user.name "Adın" yaz
+                                          git config user.email "email@xyz.com" yaz
+Authentication failed                   → GitHub şifresi değil, Personal Access
+                                          Token kullanman lazım (GitHub → Settings
+                                          → Developer Settings → Tokens)
+nothing to commit                       → Değişiklik yapılmamış, normal durum ✔
+merge conflict                          → VS Code'da çakışan dosyayı aç,
+                                          <<<< ve >>>> işaretli satırları düzelt,
+                                          git add . → git commit yap
+
+
+▌ TAM SENARYO — Kod yazıp GitHub'a gönderme akışı
+──────────────────────────────────────────────────────────────────────────────
+
+1. VS Code'u aç
+2. Kodu değiştir / yeni dosya ekle
+3. VS Code Terminal'i aç (Ctrl + `)
+4. Şu komutları sırayla çalıştır:
+
+   git status                              ← neyin değiştiğini gör
+   git add .                               ← hepsini hazırla
+   git commit -m "yaptığın şeyi yaz"      ← lokalde kaydet
+   git push                                ← GitHub'a gönder
+
+5. GitHub'a git, dosyaların güncellendiğini gör:
+   https://github.com/HayvancilikTakipSistemi/LMS_Frontend_HayvancilikTakipSistemi
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
